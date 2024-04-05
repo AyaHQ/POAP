@@ -28,6 +28,7 @@ const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "https://eth-mainnet.g.al
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/your-api-key"
 const MATIC_RPC_URL = process.env.MATIC_RPC_URL || "https://polygon-mainnet.g.alchemy.com/v2/your-api-key"
 const MUMBAI_RPC_URL = process.env.MUMBAI_RPC_URL || "https://polygon-mumbai.g.alchemy.com/v2/v3/your-api-key"
+const HOLESKY_RPC_URL = process.env.HOLESKY_RPC_URL
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "api-key"
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "api-key"
@@ -62,6 +63,12 @@ const config: HardhatUserConfig = {
 		},
 		mumbai: {
 			url: MUMBAI_RPC_URL,
+			chainId: 80001,
+			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
+		},
+		holesky: {
+			url: HOLESKY_RPC_URL,
+			chainId: 17000,
 			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
 		},
 	},
