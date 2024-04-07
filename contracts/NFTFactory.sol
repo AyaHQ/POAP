@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import { NFTContract } from "./NFTContract.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -47,29 +47,29 @@ contract NFTFactory is Ownable {
 
 		emit NFTCreated(contractAddress, platform, count);
 
-		count = count + 1;
+		count++;
 	}
 
-	function mint(
-		bytes32 _ethSignedMessageHash,
-		bytes32 r,
-		bytes32 s,
-		uint8 v,
-		uint256 index,
-		uint256 group,
-		string memory ayaId,
-		string memory platformId
-	) external onlyOwner {
-		address contractAddress = nfts[index].contractAddress;
-		NFTContract nft = NFTContract(contractAddress);
+	// function mint(
+	// 	bytes32 _ethSignedMessageHash,
+	// 	bytes32 r,
+	// 	bytes32 s,
+	// 	uint8 v,
+	// 	uint256 index,
+	// 	uint256 group,
+	// 	string memory ayaId,
+	// 	string memory platformId
+	// ) external onlyOwner {
+	// 	address contractAddress = nfts[index].contractAddress;
+	// 	NFTContract nft = NFTContract(contractAddress);
 
-		address _address = _getSigner(_ethSignedMessageHash, r, s, v);
-		require(
-			nft.isWhitelisted(group, _address),
-			"Address is not whitelisted"
-		);
-		nft.mintFor(ayaId, platformId, _address);
-	}
+	// 	address _address = _getSigner(_ethSignedMessageHash, r, s, v);
+	// 	require(
+	// 		nft.isWhitelisted(group, _address),
+	// 		"Address is not whitelisted"
+	// 	);
+	// 	nft.mintFor(ayaId, platformId, _address);
+	// }
 
 	function setPaused(uint256 index, bool _paused) external onlyOwner {
 		address contractAddress = nfts[index].contractAddress;
@@ -85,6 +85,16 @@ contract NFTFactory is Ownable {
 		address contractAddress = nfts[index].contractAddress;
 		NFTContract nft = NFTContract(contractAddress);
 		nft.whitelist(group, _address);
+	}
+
+	function batchWhitelistNFTContract(
+		uint256 index,
+		uint256 group,
+		address[] memory _addresses
+	) external onlyOwner {
+		address contractAddress = nfts[index].contractAddress;
+		NFTContract nft = NFTContract(contractAddress);
+		nft.batchWhitelist(group, _addresses);
 	}
 
 	function blacklist(
@@ -104,5 +114,13 @@ contract NFTFactory is Ownable {
 		address contractAddress = nfts[index].contractAddress;
 		NFTContract nft = NFTContract(contractAddress);
 		nft.setBaseTokenURI(newBaseTokenURI);
+	}
+
+	function totalMintedNFTContract(
+		uint256 index
+	) public view returns (uint256) {
+		address contractAddress = nfts[index].contractAddress;
+		NFTContract nft = NFTContract(contractAddress);
+		return nft.totalSupply();
 	}
 }

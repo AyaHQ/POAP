@@ -131,12 +131,4 @@ contract NFTContract is ERC721Enumerable, Ownable {
 	function setPaused(bool _paused) external onlyOwner {
 		paused = _paused;
 	}
-
-	// function transferFrom(
-	// 	address from,
-	// 	address to,
-	// 	uint256 tokenId
-	// ) public pure override(ERC721, IERC721) {
-	// 	revert("disabled");
-	// }
 }
