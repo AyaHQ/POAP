@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
 contract NFTContract is ERC721Enumerable, Ownable {
 	string public baseTokenURI;
@@ -21,8 +20,8 @@ contract NFTContract is ERC721Enumerable, Ownable {
 
 	// Optional: events for minting and URI update
 	event BaseTokenURIUpdated(string indexed newBaseTokenURI);
-
 	event TokenMinted(address indexed to, uint256 indexed tokenId);
+	event PausedState(bool paused);
 
 	constructor(
 		string memory _name,
@@ -130,5 +129,6 @@ contract NFTContract is ERC721Enumerable, Ownable {
 
 	function setPaused(bool _paused) external onlyOwner {
 		paused = _paused;
+		emit PausedState(_paused);
 	}
 }
