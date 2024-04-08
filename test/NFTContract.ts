@@ -199,4 +199,27 @@ describe("NFTContract", () => {
 			expect(await contract.tokenURI(tokenId)).to.equal(expectedTokenURI)
 		})
 	})
+
+	describe("Token Transfer", () => {
+		it("Should fail to transfer tokens due to soulbound restriction", async () => {
+			const { contract, accounts } = await setupFixture()
+
+			// Whitelist the accounts
+			await contract.whitelist(accounts[1].address)
+
+			// Mint a token for the first account
+			await contract.connect(accounts[1]).mint("ayaId", "platformId")
+			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
+			expect(await contract.totalSupply()).to.equal(1)
+
+			// Attempt to transfer the token from the first account to the second account
+			// This should fail due to the soulbound restriction
+			await expect(
+				contract.connect(accounts[1]).transferFrom(accounts[1].address, accounts[2].address, 1)
+			).to.be.revertedWith("Soulbound: Transfer failed")
+
+			// Check that the token ownership remains unchanged
+			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
+		})
+	})
 })

@@ -76,12 +76,4 @@ contract NFTFactory is Ownable {
 		NFTContract nft = NFTContract(contractAddress);
 		nft.setBaseTokenURI(newBaseTokenURI);
 	}
-
-	// function totalMintedNFTContract(
-	// 	uint256 index
-	// ) public view returns (uint256) {
-	// 	address contractAddress = nfts[index].contractAddress;
-	// 	NFTContract nft = NFTContract(contractAddress);
-	// 	return nft.totalSupply();
-	// }
 }
