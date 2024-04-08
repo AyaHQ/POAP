@@ -1,49 +1,64 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 contract NFTContract is ERC721Enumerable, Ownable {
-	string public baseTokenURI;
+	using Strings for uint256;
 
-	bool public paused = false;
-
-	mapping(uint256 => mapping(address => bool)) private _whitelist;
-
+	mapping(address => bool) public _whitelist;
+	mapping(address => bool) private hasMinted;
 	mapping(address => string) public ayaIds;
-
 	mapping(address => string) public platformIds;
 
-	mapping(address => bool) private hasMinted;
+	bool public paused = false;
+	string public _baseTokenURI;
 
-	// Optional: events for minting and URI update
+	event Whitelisted(address indexed account);
+	event Blacklisted(address indexed account);
+	event Mint(address indexed to, uint256 indexed tokenId);
 	event BaseTokenURIUpdated(string indexed newBaseTokenURI);
-	event TokenMinted(address indexed to, uint256 indexed tokenId);
 	event PausedState(bool paused);
 
 	constructor(
-		string memory _name,
-		string memory _symbol,
-		string memory _baseTokenURI
-	) ERC721(_name, _symbol) Ownable(msg.sender) {
-		baseTokenURI = _baseTokenURI;
+		string memory name,
+		string memory symbol,
+		string memory baseTokenURI
+	) ERC721(name, symbol) Ownable(msg.sender) {
+		_baseTokenURI = baseTokenURI;
 	}
 
-	modifier onlyWhitelisted(uint256 group) {
-		require(_whitelist[group][msg.sender], "Sender is not whitelisted");
-		_;
+	function setPaused(bool _paused) external onlyOwner {
+		paused = _paused;
+		emit PausedState(_paused);
 	}
 
-	modifier minted() {
-		require(!hasMinted[msg.sender], "Address has minted a token");
-		_;
+	function setBaseTokenURI(string memory newBaseTokenURI) external onlyOwner {
+		_baseTokenURI = newBaseTokenURI;
+		emit BaseTokenURIUpdated(newBaseTokenURI);
 	}
 
-	modifier mintable() {
-		require(paused == false, "Miniting is currrently paused");
-		_;
+	function isWhitelisted(address _address) public view returns (bool) {
+		return _whitelist[_address];
+	}
+
+	function whitelist(address _address) external onlyOwner {
+		_whitelist[_address] = true;
+		emit Whitelisted(_address);
+	}
+
+	function batchWhitelist(address[] memory _addresses) external onlyOwner {
+		for (uint256 i = 0; i < _addresses.length; i++) {
+			_whitelist[_addresses[i]] = true;
+			emit Whitelisted(_addresses[i]);
+		}
+	}
+
+	function blacklist(address _address) external onlyOwner {
+		_whitelist[_address] = false;
+		emit Blacklisted(_address);
 	}
 
 	function _exists(uint256 tokenId) internal view returns (bool) {
@@ -57,78 +72,55 @@ contract NFTContract is ERC721Enumerable, Ownable {
 		require(_exists(tokenId), "URI query for nonexistent token");
 
 		return
-			bytes(baseTokenURI).length > 0
+			bytes(_baseTokenURI).length > 0
 				? string(
-					abi.encodePacked(baseTokenURI, Strings.toString(tokenId))
+					abi.encodePacked(_baseTokenURI, Strings.toString(tokenId))
 				)
 				: "";
 	}
 
-	function isWhitelisted(
-		uint256 group,
-		address _address
-	) public view returns (bool) {
-		return _whitelist[group][_address];
-	}
-
-	function whitelist(uint256 group, address _address) external onlyOwner {
-		_whitelist[group][_address] = true;
-	}
-
-	function batchWhitelist(
-		uint256 group,
-		address[] memory _addresses
-	) external onlyOwner {
-		for (uint256 i = 0; i < _addresses.length; i++) {
-			_whitelist[group][_addresses[i]] = true;
-		}
-	}
-
-	function blacklist(uint256 group, address _address) external onlyOwner {
-		_whitelist[group][_address] = false;
-	}
-
-	function mint(
-		uint256 group,
-		string memory ayaId,
-		string memory platformId
-	) external onlyWhitelisted(group) mintable minted {
-		uint256 tokenId = totalSupply() + 1;
+	function mint(string memory ayaId, string memory platformId) external {
 		address recipient = msg.sender;
+		require(!paused, "Minting is paused");
+		require(_whitelist[recipient], "You are not whitelisted to mint");
+		require(!hasMinted[recipient], "Address has minted a token");
+		uint256 tokenId = totalSupply() + 1;
 		require(!_exists(tokenId), "Token already minted");
-
 		_safeMint(recipient, tokenId);
 		hasMinted[recipient] = true;
-
 		ayaIds[recipient] = ayaId;
 		platformIds[recipient] = platformId;
-
-		emit TokenMinted(recipient, tokenId);
+		emit Mint(recipient, tokenId);
 	}
 
 	function mintFor(
 		string memory ayaId,
 		string memory platformId,
 		address _address
-	) external mintable onlyOwner {
-		uint256 tokenId = totalSupply() + 1;
+	) external onlyOwner {
 		address recipient = _address;
+		require(!paused, "Minting is paused");
+		require(_whitelist[recipient], "You are not whitelisted to mint");
+		require(!hasMinted[recipient], "Address has minted a token");
+		uint256 tokenId = totalSupply() + 1;
 
 		_safeMint(recipient, tokenId);
-
 		ayaIds[recipient] = ayaId;
 		platformIds[recipient] = platformId;
 
-		emit TokenMinted(recipient, tokenId);
+		emit Mint(recipient, tokenId);
 	}
 
-	function setBaseTokenURI(string memory newBaseTokenURI) external onlyOwner {
-		baseTokenURI = newBaseTokenURI;
-		emit BaseTokenURIUpdated(newBaseTokenURI);
-	}
+	function _update(
+		address to,
+		uint256 tokenId,
+		address auth
+	) internal override(ERC721Enumerable) returns (address) {
+		address from = _ownerOf(tokenId);
+		if (from != address(0) && to != address(0)) {
+			revert("Soulbound: Transfer failed");
+		}
 
-	function setPaused(bool _paused) external onlyOwner {
-		paused = _paused;
-		emit PausedState(_paused);
+		return super._update(to, tokenId, auth);
 	}
 }

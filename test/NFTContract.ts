@@ -44,10 +44,10 @@ describe("NFTContract", () => {
 			const { contract, accounts } = await setupFixture()
 
 			// Whitelist the account
-			await contract.whitelist(1, accounts[1].address)
+			await contract.whitelist(accounts[1].address)
 
 			// Mint a token for the whitelisted account
-			await contract.connect(accounts[1]).mint(1, "ayaId", "platformId")
+			await contract.connect(accounts[1]).mint("ayaId", "platformId")
 
 			// Check that the token was minted successfully
 			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
@@ -57,15 +57,15 @@ describe("NFTContract", () => {
 		it("Should not mint tokens for address not on whitelist", async () => {
 			const { contract, accounts } = await setupFixture()
 
-			await expect(contract.connect(accounts[1]).mint(1, "ayaId", "platformId")).to.be.revertedWith(
-				"Sender is not whitelisted"
+			expect(contract.connect(accounts[1]).mint("ayaId", "platformId")).to.be.revertedWith(
+				"You are not whitelisted to mint"
 			)
 		})
 		it("Should not mint tokens when paused", async () => {
 			const { contract, accounts } = await setupFixture()
 
 			// Whitelist the account
-			await contract.whitelist(1, accounts[1].address)
+			await contract.whitelist(accounts[1].address)
 
 			// Pause minting. contract must be paused by the owner
 			await contract.setPaused(true)
@@ -73,7 +73,7 @@ describe("NFTContract", () => {
 			// Check the paused state after calling setPaused
 			const pausedState = await contract.paused()
 			expect(pausedState).to.equal(true)
-			expect(contract.connect(accounts[1]).mint(1, "ayaId", "platformId")).to.be.revertedWith(
+			expect(contract.connect(accounts[1]).mint("ayaId", "platformId")).to.be.revertedWith(
 				"Miniting is currrently paused"
 			)
 		})
@@ -82,7 +82,7 @@ describe("NFTContract", () => {
 			const { contract, accounts } = await setupFixture()
 
 			// Whitelist the account
-			await contract.whitelist(1, accounts[1].address)
+			await contract.whitelist(accounts[1].address)
 
 			// Pause minting. contract must be paused by the owner
 			await contract.setPaused(true)
@@ -99,7 +99,7 @@ describe("NFTContract", () => {
 			expect(unpausedState).to.equal(false)
 
 			// Mint a token for the whitelisted account
-			await contract.connect(accounts[1]).mint(1, "ayaId", "platformId")
+			await contract.connect(accounts[1]).mint("ayaId", "platformId")
 
 			// Check that the token was minted successfully
 			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
@@ -112,26 +112,26 @@ describe("NFTContract", () => {
 			const { contract, accounts } = await setupFixture()
 
 			// Whitelist an address
-			await contract.whitelist(1, accounts[1].address)
-			expect(await contract.isWhitelisted(1, accounts[1].address)).to.be.true
+			await contract.whitelist(accounts[1].address)
+			expect(await contract.isWhitelisted(accounts[1].address)).to.be.true
 
 			// Blacklist the same address
-			await contract.blacklist(1, accounts[1].address)
-			expect(await contract.isWhitelisted(1, accounts[1].address)).to.be.false
+			await contract.blacklist(accounts[1].address)
+			expect(await contract.isWhitelisted(accounts[1].address)).to.be.false
 		})
 
 		it("Should  batch whitelist multiple addresses", async () => {
 			const { contract, accounts } = await setupFixture()
-			await contract.batchWhitelist(1, [
+			await contract.batchWhitelist([
 				accounts[1].address,
 				accounts[2].address,
 				accounts[3].address,
 				accounts[4].address,
 			])
-			expect(await contract.isWhitelisted(1, accounts[1].address)).to.be.true
-			expect(await contract.isWhitelisted(1, accounts[2].address)).to.be.true
-			expect(await contract.isWhitelisted(1, accounts[3].address)).to.be.true
-			expect(await contract.isWhitelisted(1, accounts[4].address)).to.be.true
+			expect(await contract.isWhitelisted(accounts[1].address)).to.be.true
+			expect(await contract.isWhitelisted(accounts[2].address)).to.be.true
+			expect(await contract.isWhitelisted(accounts[3].address)).to.be.true
+			expect(await contract.isWhitelisted(accounts[4].address)).to.be.true
 		})
 	})
 
