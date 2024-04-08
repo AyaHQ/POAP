@@ -68,14 +68,14 @@ contract NFTFactory is Ownable {
 		nft.blacklist(_address);
 	}
 
-	// function updateNFTBaseTokenURI(
-	// 	uint256 index,
-	// 	string memory newBaseTokenURI
-	// ) external onlyOwner {
-	// 	address contractAddress = nfts[index].contractAddress;
-	// 	NFTContract nft = NFTContract(contractAddress);
-	// 	nft.setBaseTokenURI(newBaseTokenURI);
-	// }
+	function updateNFTBaseTokenURI(
+		uint256 index,
+		string memory newBaseTokenURI
+	) external onlyOwner {
+		address contractAddress = nfts[index].contractAddress;
+		NFTContract nft = NFTContract(contractAddress);
+		nft.setBaseTokenURI(newBaseTokenURI);
+	}
 
 	// function totalMintedNFTContract(
 	// 	uint256 index
