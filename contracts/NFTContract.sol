@@ -9,7 +9,7 @@ contract NFTContract is ERC721Enumerable, Ownable {
 	using Strings for uint256;
 
 	mapping(address => bool) public _whitelist;
-	mapping(address => bool) private hasMinted;
+	mapping(address => bool) public hasMinted;
 	mapping(address => string) public ayaIds;
 	mapping(address => string) public platformIds;
 

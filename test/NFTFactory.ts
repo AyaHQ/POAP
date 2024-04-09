@@ -6,9 +6,11 @@ import { NFTFactory } from "typechain-types"
 describe("NFTFactory", function () {
 	let NFTFactory
 	let nftFactory: NFTFactory & { deploymentTransaction(): ContractTransactionResponse }
-	let owner: { address: any }
+	let owner: {
+		address: AddressLike
+	}
 	let addr1: {
-		provider: any
+		provider: unknown | never | any
 		address: Typed | AddressLike
 	}
 	let addr2: { address: Typed | AddressLike }
@@ -48,6 +50,10 @@ describe("NFTFactory", function () {
 			const contract = await ethers.getContractAt("NFTContract", nft.contractAddress)
 			const paused = await contract.paused()
 			expect(paused).to.be.true
+		})
+
+		it("should check owner of the contract", async function () {
+			expect(await nftFactory.owner()).to.equal(owner.address)
 		})
 
 		it("Should whitelist an address for a specific NFT contract", async function () {
@@ -114,7 +120,7 @@ describe("NFTFactory", function () {
 		it("Should revert if non-owner attempts to blacklist an address", async function () {
 			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
 
-			await expect(nftFactory.connect(addr1).blacklist(0, addr2.address as AddressLike)).to.be.reverted
+			await expect(nftFactory.connect(addr1).blacklist(0, addr1.address)).to.be.reverted
 		})
 
 		it("Should revert if non-owner attempts to update the base token URI", async function () {
