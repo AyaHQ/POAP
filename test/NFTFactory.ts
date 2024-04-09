@@ -73,4 +73,27 @@ describe("NFTFactory", function () {
 			expect(nftDetails.contractAddress).to.not.be.undefined
 		})
 	})
+
+	describe("Ownership Functionality", () => {
+		it("Should transfer ownership of the contract", async () => {
+			const { contract, accounts } = await setupFixture()
+
+			// Transfer ownership to another account
+			await contract.transferOwnership(accounts[1].address)
+
+			// Check that the new owner is set correctly
+			expect(await contract.owner()).to.equal(accounts[1].address)
+		})
+
+		it("Should renounce ownership of the contract", async () => {
+			const { contract } = await setupFixture()
+
+			// Renounce ownership
+			await contract.renounceOwnership()
+
+			// Check that ownership is renounced
+			const newOwner = await contract.owner()
+			expect(newOwner).to.equal("0x0000000000000000000000000000000000000000")
+		})
+	})
 })
