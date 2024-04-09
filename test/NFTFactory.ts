@@ -1,132 +1,76 @@
 import { expect } from "chai"
-import { AddressLike, ContractTransactionResponse, Typed } from "ethers"
-import { ethers } from "hardhat"
+import { deployments, ethers, getNamedAccounts } from "hardhat"
 import { NFTFactory } from "typechain-types"
 
 describe("NFTFactory", function () {
-	let NFTFactory
-	let nftFactory: NFTFactory & { deploymentTransaction(): ContractTransactionResponse }
-	let owner: {
-		address: AddressLike
-	}
-	let addr1: {
-		provider: unknown | never | any
-		address: Typed | AddressLike
-	}
-	let addr2: { address: Typed | AddressLike }
+	const setupFixture = deployments.createFixture(async () => {
+		await deployments.fixture()
+		const signers = await getNamedAccounts()
 
-	beforeEach(async function () {
-		;[owner, addr1, addr2] = await ethers.getSigners()
-		NFTFactory = await ethers.getContractFactory("NFTFactory")
-		nftFactory = await NFTFactory.deploy()
-		await (await (nftFactory.deploymentTransaction() as unknown as Promise<ContractTransactionResponse>)).wait()
+		const contract = await ethers.deployContract("NFTFactory")
+
+		return {
+			contract,
+			contractAddress: await contract.getAddress(),
+			deployer: signers.deployer,
+			accounts: await ethers.getSigners(),
+		}
 	})
 
 	describe("Deployment Functionality", () => {
 		it("Should deploy and create NFT successfully", async function () {
-			const name = "MyNFT"
-			const symbol = "MNFT"
-			const description = "My NFT Description"
-			const platform = "Ethereum"
-			const tokenBaseURI = "ipfs://baseURI/"
+			const { contract, accounts } = await setupFixture()
 
-			await nftFactory.createNFT(name, symbol, description, platform, tokenBaseURI)
+			// Create NFT
+			await contract.createNFT(
+				"Test NFT",
+				"TST",
+				"Test NFT Description",
+				"Test Platform",
+				"https://example.com/",
+				accounts[0].address
+			)
 
-			const nft = await nftFactory.nfts(0)
-
-			expect(nft.description).to.equal(description)
-			expect(nft.platform).to.equal(platform)
-			expect(nft.contractAddress).to.not.be.null
+			// Assert NFT creation
+			const nft = await contract.nfts(0)
+			expect(nft.description).to.equal("Test NFT Description")
+			expect(nft.platform).to.equal("Test Platform")
+			expect(nft.contractAddress).to.not.be.undefined
 		})
 	})
+	describe("NFT Functionality", () => {
+		it("Should return correct NFT count", async function () {
+			const { contract, accounts } = await setupFixture()
 
-	describe("admin functionalities", () => {
-		it("Should set contract to paused state", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await nftFactory.setPaused(0, true)
-
-			const nft = await nftFactory.nfts(0)
-			const contract = await ethers.getContractAt("NFTContract", nft.contractAddress)
-			const paused = await contract.paused()
-			expect(paused).to.be.true
+			// Create NFT
+			await contract.createNFT(
+				"Test NFT",
+				"TST",
+				"Test NFT Description",
+				"Test Platform",
+				"https://example.com/",
+				accounts[0].address
+			)
+			const nftCount = await contract.count()
+			expect(nftCount).to.equal(1) // Assuming one NFT was created in the previous test
 		})
 
-		it("should check owner of the contract", async function () {
-			expect(await nftFactory.owner()).to.equal(owner.address)
-		})
+		it("Should return correct NFT details", async function () {
+			const { contract, accounts } = await setupFixture()
 
-		it("Should whitelist an address for a specific NFT contract", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await nftFactory.whitelist(0, addr1.address)
-
-			const contract = await ethers.getContractAt("NFTContract", (await nftFactory.nfts(0)).contractAddress)
-			expect(await contract.isWhitelisted(addr1.address)).to.be.true
-		})
-
-		it("Should batch whitelist addresses for a specific NFT contract", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await nftFactory.batchWhitelistNFTContract(0, [addr1.address as AddressLike, addr2.address as AddressLike])
-
-			const contract = await ethers.getContractAt("NFTContract", (await nftFactory.nfts(0)).contractAddress)
-			expect(await contract.isWhitelisted(addr1.address)).to.be.true
-			expect(await contract.isWhitelisted(addr2.address)).to.be.true
-		})
-
-		it("Should blacklist an address for a specific NFT contract", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await nftFactory.whitelist(0, addr1.address)
-
-			await nftFactory.blacklist(0, addr1.address)
-
-			const contract = await ethers.getContractAt("NFTContract", (await nftFactory.nfts(0)).contractAddress)
-			expect(await contract.isWhitelisted(addr1.address)).to.be.false
-		})
-
-		it("Should update the base token URI for a specific NFT contract", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			const newBaseURI = "ipfs://newBaseURI/"
-			await nftFactory.updateNFTBaseTokenURI(0, newBaseURI)
-
-			const contract = await ethers.getContractAt("NFTContract", (await nftFactory.nfts(0)).contractAddress)
-			expect(await contract._baseTokenURI()).to.equal(newBaseURI)
-		})
-	})
-
-	describe("non-owner functionalities", () => {
-		it("Should not allow non-owner to call setPaused", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await expect(nftFactory.connect(addr1).setPaused(0, true)).to.be.reverted
-		})
-
-		it("Should revert if non-owner attempts to whitelist an address", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await expect(nftFactory.connect(addr1).whitelist(0, addr2.address)).to.be.reverted
-		})
-
-		it("Should revert if non-owner attempts to batch whitelist addresses", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await expect(nftFactory.connect(addr1).batchWhitelistNFTContract(0, [addr2.address as AddressLike])).to.be
-				.reverted
-		})
-
-		it("Should revert if non-owner attempts to blacklist an address", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await expect(nftFactory.connect(addr1).blacklist(0, addr1.address)).to.be.reverted
-		})
-
-		it("Should revert if non-owner attempts to update the base token URI", async function () {
-			await nftFactory.createNFT("Name", "Symbol", "Description", "Platform", "BaseURI")
-
-			await expect(nftFactory.connect(addr1).updateNFTBaseTokenURI(0, "newBaseURI")).to.be.reverted
+			// Create NFT
+			await contract.createNFT(
+				"Test NFT",
+				"TST",
+				"Test NFT Description",
+				"Test Platform",
+				"https://example.com/",
+				accounts[0].address
+			)
+			const nftDetails = await contract.nfts(0)
+			expect(nftDetails.description).to.equal("Test NFT Description")
+			expect(nftDetails.platform).to.equal("Test Platform")
+			expect(nftDetails.contractAddress).to.not.be.undefined
 		})
 	})
 })

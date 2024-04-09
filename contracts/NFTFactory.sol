@@ -28,9 +28,10 @@ contract NFTFactory is Ownable {
 		string memory symbol,
 		string memory description,
 		string memory platform,
-		string memory tokenBaseURI
+		string memory tokenBaseURI,
+		address owner
 	) external onlyOwner {
-		NFTContract nft = new NFTContract(name, symbol, tokenBaseURI);
+		NFTContract nft = new NFTContract(name, symbol, tokenBaseURI, owner);
 
 		address contractAddress = address(nft);
 
@@ -39,41 +40,5 @@ contract NFTFactory is Ownable {
 		emit NFTCreated(contractAddress, platform, count);
 
 		count++;
-	}
-
-	function setPaused(uint256 index, bool _paused) external onlyOwner {
-		address contractAddress = nfts[index].contractAddress;
-		NFTContract nft = NFTContract(contractAddress);
-		nft.setPaused(_paused);
-	}
-
-	function whitelist(uint256 index, address _address) external onlyOwner {
-		address contractAddress = nfts[index].contractAddress;
-		NFTContract nft = NFTContract(contractAddress);
-		nft.whitelist(_address);
-	}
-
-	function batchWhitelistNFTContract(
-		uint256 index,
-		address[] memory _addresses
-	) external onlyOwner {
-		address contractAddress = nfts[index].contractAddress;
-		NFTContract nft = NFTContract(contractAddress);
-		nft.batchWhitelist(_addresses);
-	}
-
-	function blacklist(uint256 index, address _address) external onlyOwner {
-		address contractAddress = nfts[index].contractAddress;
-		NFTContract nft = NFTContract(contractAddress);
-		nft.blacklist(_address);
-	}
-
-	function updateNFTBaseTokenURI(
-		uint256 index,
-		string memory newBaseTokenURI
-	) external onlyOwner {
-		address contractAddress = nfts[index].contractAddress;
-		NFTContract nft = NFTContract(contractAddress);
-		nft.setBaseTokenURI(newBaseTokenURI);
 	}
 }

@@ -10,10 +10,11 @@ describe("NFTContract", () => {
 		const _name = "Aya-membershipNFT"
 		const _symbol = "AYA-NFT"
 		const _baseURI = "ipfs://base-uri/"
+		const _owner = await ethers.getSigner(signers.deployer) // Convert _owner to ethers.Signer object
 
 		const contract = await ethers.deployContract(
 			"NFTContract",
-			[_name, _symbol, _baseURI],
+			[_name, _symbol, _baseURI, _owner.address],
 			await ethers.getSigner(signers.deployer)
 		)
 
@@ -26,6 +27,7 @@ describe("NFTContract", () => {
 				_name,
 				_symbol,
 				_baseURI,
+				_owner,
 			},
 		}
 	})
@@ -36,6 +38,8 @@ describe("NFTContract", () => {
 
 			expect(await contract.name()).to.equal(contractConstructor._name)
 			expect(await contract.symbol()).to.equal(contractConstructor._symbol)
+			expect(await contract._baseTokenURI()).to.equal(contractConstructor._baseURI)
+			expect(await contract.owner()).to.equal(contractConstructor._owner.address)
 		})
 	})
 

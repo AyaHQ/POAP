@@ -25,8 +25,9 @@ contract NFTContract is ERC721Enumerable, Ownable {
 	constructor(
 		string memory name,
 		string memory symbol,
-		string memory baseTokenURI
-	) ERC721(name, symbol) Ownable(msg.sender) {
+		string memory baseTokenURI,
+		address owner
+	) ERC721(name, symbol) Ownable(owner) {
 		_baseTokenURI = baseTokenURI;
 	}
 
