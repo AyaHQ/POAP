@@ -26,13 +26,13 @@ import "./tasks/erc1155/contract-uri"
 
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL || "https://eth-mainnet.g.alchemy.com/v2/your-api-key"
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/your-api-key"
-const MATIC_RPC_URL = process.env.MATIC_RPC_URL || "https://polygon-mainnet.g.alchemy.com/v2/your-api-key"
-const MUMBAI_RPC_URL = process.env.MUMBAI_RPC_URL || "https://polygon-mumbai.g.alchemy.com/v2/v3/your-api-key"
 const BASE_SEPOLIA_RPC_URL = process.env.BASE_SEPOLIA_RPC_URL
-const HOLESKY_RPC_URL = process.env.HOLESKY_RPC_URL
+const OPTIMISM_RPC_URL = process.env.OPTIMISM_RPC_URL
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "api-key"
-const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "api-key"
+const BASE_SEPOLIA_API_KEY = process.env.BASE_SEPOLIA_API_KEY || "api-key"
+const SEPOLIA_API_KEY = process.env.SEPOLIA_API_KEY || "api-key"
+const OPTIMISM_API_KEY = process.env.OPTIMISM_API_KEY || "api-key"
 
 // Import MNEMONIC or single private key
 const MNEMONIC = process.env.MNEMONIC || "your mnemonic"
@@ -56,25 +56,18 @@ const config: HardhatUserConfig = {
 		},
 		sepolia: {
 			url: SEPOLIA_RPC_URL,
+			// chainId: 11155111,
 			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
 		},
-		matic: {
-			url: MATIC_RPC_URL,
-			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
-		},
-		mumbai: {
-			url: MUMBAI_RPC_URL,
-			chainId: 80001,
-			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
-		},
-		holesky: {
-			url: HOLESKY_RPC_URL,
-			chainId: 17000,
-			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
-		},
+
 		baseSepolia: {
 			url: BASE_SEPOLIA_RPC_URL,
 			chainId: 84532,
+			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
+		},
+		optimism: {
+			url: OPTIMISM_RPC_URL,
+			chainId: 10,
 			accounts: PRIVATE_KEY ? [PRIVATE_KEY] : { mnemonic: MNEMONIC },
 		},
 	},
@@ -83,9 +76,9 @@ const config: HardhatUserConfig = {
 		// Obtain one at https://etherscan.io/
 		apiKey: {
 			mainnet: ETHERSCAN_API_KEY,
-			sepolia: ETHERSCAN_API_KEY,
-			polygon: POLYGONSCAN_API_KEY,
-			polygonMumbai: POLYGONSCAN_API_KEY,
+			sepolia: SEPOLIA_API_KEY,
+			baseSepolia: BASE_SEPOLIA_API_KEY,
+			optimism: OPTIMISM_API_KEY,
 		},
 	},
 	namedAccounts: {
