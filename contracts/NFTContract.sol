@@ -11,7 +11,7 @@ contract NFTContract is ERC721Enumerable, Ownable {
 	mapping(address => bool) public _whitelist;
 	mapping(address => bool) public hasMinted;
 	mapping(address => string) public ayaIds;
-	mapping(address => string) public platformIds;
+	// mapping(address => string) public platformIds;
 
 	bool public paused = false;
 	string public _baseTokenURI;
@@ -80,7 +80,9 @@ contract NFTContract is ERC721Enumerable, Ownable {
 				: "";
 	}
 
-	function mint(string memory ayaId, string memory platformId) external {
+	function mint(
+		string memory ayaId // string memory platformId
+	) external {
 		address recipient = msg.sender;
 		require(!paused, "Minting is paused");
 		require(_whitelist[recipient], "You are not whitelisted to mint");
@@ -90,26 +92,25 @@ contract NFTContract is ERC721Enumerable, Ownable {
 		_safeMint(recipient, tokenId);
 		hasMinted[recipient] = true;
 		ayaIds[recipient] = ayaId;
-		platformIds[recipient] = platformId;
+		// platformIds[recipient] = platformId;
 		emit Mint(recipient, tokenId);
 	}
 
 	function mintFor(
 		string memory ayaId,
-		string memory platformId,
+		// string memory platformId,
 		address _address
 	) external onlyOwner {
-		address recipient = _address;
 		require(!paused, "Minting is paused");
-		require(_whitelist[recipient], "You are not whitelisted to mint");
-		require(!hasMinted[recipient], "Address has minted a token");
+		require(_whitelist[_address], "You are not whitelisted to mint");
+		require(!hasMinted[_address], "Address has minted a token");
 		uint256 tokenId = totalSupply() + 1;
 
-		_safeMint(recipient, tokenId);
-		ayaIds[recipient] = ayaId;
-		platformIds[recipient] = platformId;
+		_safeMint(_address, tokenId);
+		ayaIds[_address] = ayaId;
+		// platformIds[_address] = platformId;
 
-		emit Mint(recipient, tokenId);
+		emit Mint(_address, tokenId);
 	}
 
 	function _update(

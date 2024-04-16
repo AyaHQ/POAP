@@ -10,7 +10,7 @@ describe("NFTContract", () => {
 		const _name = "Aya-membershipNFT"
 		const _symbol = "AYA-NFT"
 		const _baseURI = "ipfs://base-uri/"
-		const _owner = await ethers.getSigner(signers.deployer) // Convert _owner to ethers.Signer object
+		const _owner = await ethers.getSigner(signers.deployer)
 
 		const contract = await ethers.deployContract(
 			"NFTContract",
@@ -51,7 +51,7 @@ describe("NFTContract", () => {
 			await contract.whitelist(accounts[1].address)
 
 			// Mint a token for the whitelisted account
-			await contract.connect(accounts[1]).mint("ayaId", "platformId")
+			await contract.connect(accounts[1]).mint("ayaId")
 
 			// Check that the token was minted successfully
 			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
@@ -61,9 +61,7 @@ describe("NFTContract", () => {
 		it("Should not mint tokens for address not on whitelist", async () => {
 			const { contract, accounts } = await setupFixture()
 
-			expect(contract.connect(accounts[1]).mint("ayaId", "platformId")).to.be.revertedWith(
-				"You are not whitelisted to mint"
-			)
+			expect(contract.connect(accounts[1]).mint("ayaId")).to.be.revertedWith("You are not whitelisted to mint")
 		})
 		it("Should not mint tokens when paused", async () => {
 			const { contract, accounts } = await setupFixture()
@@ -77,9 +75,7 @@ describe("NFTContract", () => {
 			// Check the paused state after calling setPaused
 			const pausedState = await contract.paused()
 			expect(pausedState).to.equal(true)
-			expect(contract.connect(accounts[1]).mint("ayaId", "platformId")).to.be.revertedWith(
-				"Miniting is currrently paused"
-			)
+			expect(contract.connect(accounts[1]).mint("ayaId")).to.be.revertedWith("Miniting is currrently paused")
 		})
 
 		it("Should mint tokens when unpaused", async () => {
@@ -103,7 +99,7 @@ describe("NFTContract", () => {
 			expect(unpausedState).to.equal(false)
 
 			// Mint a token for the whitelisted account
-			await contract.connect(accounts[1]).mint("ayaId", "platformId")
+			await contract.connect(accounts[1]).mint("ayaId")
 
 			// Check that the token was minted successfully
 			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
@@ -118,7 +114,7 @@ describe("NFTContract", () => {
 			expect(await contract.isWhitelisted(accounts[1].address)).to.be.true
 
 			// Mint a token for a specified address by the contract owner
-			await contract.mintFor("ayaId", "platformId", accounts[1].address)
+			await contract.mintFor("ayaId", accounts[1].address)
 
 			// Check that the token was minted successfully
 			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
@@ -128,9 +124,7 @@ describe("NFTContract", () => {
 		it("Should not mint tokens for address not on whitelist", async () => {
 			const { contract, accounts } = await setupFixture()
 
-			expect(contract.mintFor("ayaId", "platformId", accounts[1].address)).to.be.revertedWith(
-				"You are not whitelisted to mint"
-			)
+			expect(contract.mintFor("ayaId", accounts[1].address)).to.be.revertedWith("You are not whitelisted to mint")
 		})
 
 		it("should not mint tokens for specified address by another address", async () => {
@@ -141,9 +135,9 @@ describe("NFTContract", () => {
 			expect(await contract.isWhitelisted(accounts[2].address)).to.be.true
 
 			// Mint a token for a specified address by another address
-			expect(
-				contract.connect(accounts[1]).mintFor("ayaId", "platformId", accounts[2].address)
-			).to.be.revertedWith("You are not allowed to mint for another address")
+			expect(contract.connect(accounts[1]).mintFor("ayaId", accounts[2].address)).to.be.revertedWith(
+				"You are not allowed to mint for another address"
+			)
 
 			// Check that the token was not minted successfully
 			expect(await contract.totalSupply()).to.equal(0)
@@ -195,7 +189,7 @@ describe("NFTContract", () => {
 			expect(await contract._baseTokenURI()).to.equal(newBaseTokenURI)
 
 			// Mint a token
-			await contract.connect(accounts[1]).mint("ayaId", "platformId")
+			await contract.connect(accounts[1]).mint("ayaId")
 
 			// Check that the token URI reflects the updated base token URI
 			const tokenId = 1
@@ -212,7 +206,7 @@ describe("NFTContract", () => {
 			await contract.whitelist(accounts[1].address)
 
 			// Mint a token for the first account
-			await contract.connect(accounts[1]).mint("ayaId", "platformId")
+			await contract.connect(accounts[1]).mint("ayaId")
 			expect(await contract.ownerOf(1)).to.equal(accounts[1].address)
 			expect(await contract.totalSupply()).to.equal(1)
 
