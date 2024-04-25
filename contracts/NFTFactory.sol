@@ -41,4 +41,13 @@ contract NFTFactory is Ownable {
 
 		count++;
 	}
+
+	function fetchNFTs() external view returns (NFT[] memory) {
+		NFT[] memory _nfts = new NFT[](count);
+
+		for (uint256 i = 0; i < count; i++) {
+			_nfts[i] = nfts[i];
+		}
+		return _nfts;
+	}
 }

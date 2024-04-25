@@ -46,18 +46,28 @@ contract NFTContract is ERC721Enumerable, Ownable {
 	}
 
 	function whitelist(address _address) external onlyOwner {
+		// check if whitelisted already
+		require(!_whitelist[_address], "Address is already whitelisted");
 		_whitelist[_address] = true;
 		emit Whitelisted(_address);
 	}
 
 	function batchWhitelist(address[] memory _addresses) external onlyOwner {
 		for (uint256 i = 0; i < _addresses.length; i++) {
+			// require(
+			// 	!_whitelist[_addresses[i]],
+			// 	"One or more addresses are already whitelisted"
+			// );
 			_whitelist[_addresses[i]] = true;
 			emit Whitelisted(_addresses[i]);
 		}
 	}
 
 	function blacklist(address _address) external onlyOwner {
+		require(
+			_whitelist[_address],
+			"Address is not whitelisted and cannot be blacklisted"
+		);
 		_whitelist[_address] = false;
 		emit Blacklisted(_address);
 	}
