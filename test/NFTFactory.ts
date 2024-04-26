@@ -72,6 +72,73 @@ describe("NFTFactory", function () {
 			expect(nftDetails.platform).to.equal("Test Platform")
 			expect(nftDetails.contractAddress).to.not.be.undefined
 		})
+
+		it("Should fetch all NFTs correctly", async function () {
+			const { contract, accounts } = await setupFixture()
+
+			// Create multiple NFTs
+			await contract.createNFT(
+				"Test NFT 1",
+				"TST1",
+				"Description 1",
+				"Platform 1",
+				"https://example1.com/",
+				accounts[0].address
+			)
+			await contract.createNFT(
+				"Test NFT 2",
+				"TST2",
+				"Description 2",
+				"Platform 2",
+				"https://example2.com/",
+				accounts[0].address
+			)
+
+			// Fetch all NFTs
+			const nfts = await contract.fetchNFTs()
+
+			// Assert fetched NFTs
+			expect(nfts.length).to.equal(2)
+			expect(nfts[0].name).to.equal("Test NFT 1")
+			expect(nfts[0].description).to.equal("Description 1")
+			expect(nfts[0].platform).to.equal("Platform 1")
+			expect(nfts[0].tokenBaseURI).to.equal("https://example1.com/")
+			expect(nfts[1].name).to.equal("Test NFT 2")
+			expect(nfts[1].description).to.equal("Description 2")
+			expect(nfts[1].platform).to.equal("Platform 2")
+			expect(nfts[1].tokenBaseURI).to.equal("https://example2.com/")
+		})
+
+		it("Should return the correct NFT by index", async function () {
+			const { contract, accounts } = await setupFixture()
+
+			// Create two NFTs to ensure the function can retrieve the correct one by index
+			await contract.createNFT(
+				"NFT Index 1",
+				"IDX1",
+				"First NFT for Indexing",
+				"Index Platform 1",
+				"https://exampleindex1.com/",
+				accounts[0].address
+			)
+			await contract.createNFT(
+				"NFT Index 2",
+				"IDX2",
+				"Second NFT for Indexing",
+				"Index Platform 2",
+				"https://exampleindex2.com/",
+				accounts[0].address
+			)
+
+			// Retrieve the second NFT by index
+			const indexedNFT = await contract.nfts(1)
+
+			// Assertions to check if the retrieved NFT is correct
+			expect(indexedNFT.name).to.equal("NFT Index 2")
+			expect(indexedNFT.description).to.equal("Second NFT for Indexing")
+			expect(indexedNFT.platform).to.equal("Index Platform 2")
+			expect(indexedNFT.tokenBaseURI).to.equal("https://exampleindex2.com/")
+		})
 	})
 
 	describe("Ownership Functionality", () => {
