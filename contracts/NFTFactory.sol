@@ -7,10 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFTFactory is Ownable {
 	struct NFT {
 		string name;
-		string symbol;
+		string tokenBaseURI;
 		string description;
 		string platform;
-		string tokenBaseURI;
 		address contractAddress;
 	}
 
@@ -25,6 +24,7 @@ contract NFTFactory is Ownable {
 	);
 
 	constructor() Ownable(msg.sender) {}
+
 	function createNFT(
 		string memory name,
 		string memory symbol,
@@ -34,19 +34,30 @@ contract NFTFactory is Ownable {
 		address owner
 	) external onlyOwner {
 		NFTContract nft = new NFTContract(name, symbol, tokenBaseURI, owner);
+
 		address contractAddress = address(nft);
 
 		nfts[count] = NFT(
 			name,
-			symbol,
+			tokenBaseURI,
 			description,
 			platform,
-			tokenBaseURI,
 			contractAddress
 		);
+
 		emit NFTCreated(contractAddress, platform, count);
+
 		count++;
 	}
+
+	// function fetchNFTs() external view returns (NFT[] memory) {
+	// 	NFT[] memory _nfts = new NFT[](count);
+
+	// 	for (uint256 i = 0; i < count; i++) {
+	// 		_nfts[i] = nfts[i];
+	// 	}
+	// 	return _nfts;
+	// }
 
 	function fetchNFTs() external view returns (NFT[] memory) {
 		NFT[] memory _nfts = new NFT[](count);
@@ -54,10 +65,9 @@ contract NFTFactory is Ownable {
 			NFT storage nft = nfts[i];
 			_nfts[i] = NFT(
 				nft.name,
-				nft.symbol,
+				nft.tokenBaseURI,
 				nft.description,
 				nft.platform,
-				nft.tokenBaseURI,
 				nft.contractAddress
 			);
 		}
