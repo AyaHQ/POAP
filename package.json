@@ -7,7 +7,6 @@
 		"test": "hardhat test",
 		"coverage": "hardhat coverage",
 		"deploy": "hardhat deploy",
-		"deploy:baseSepolia:": "hardhat --network baseSepolia run deploy/Deploy_NFTFactory.ts",
 		"deploy:baseSepolia:": "hardhat --network baseSepolia run deploy/Deploy_NFTContract.ts",
 		"node": "hardhat node",
 		"sol:format:check": "prettier --check --plugin=prettier-plugin-solidity 'contracts/**/*.sol'",
@@ -21,7 +20,7 @@
 	"author": "AyaHQ",
 	"license": "MIT",
 	"dependencies": {
-		"@openzeppelin/contracts": "5.0.2"
+		"@openzeppelin/contracts": "^5.0.2"
 	},
 	"devDependencies": {
 		"@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
